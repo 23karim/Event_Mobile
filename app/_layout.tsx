@@ -26,6 +26,7 @@ function RootLayoutNav() {
       <Stack.Screen name="index" /> 
       <Stack.Screen name="(auth)" options={{ animation: 'fade' }} />
       <Stack.Screen name="(tabs)" options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="event-details/[id]" options={{ presentation: 'card' }} />
     </Stack>
   );
 }

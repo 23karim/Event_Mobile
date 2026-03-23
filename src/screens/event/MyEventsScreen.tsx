@@ -15,7 +15,6 @@ export default function MyEventsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
 
-  // 1. Fonction de chargement
   const loadMyEvents = async () => {
     try {
       const response = await eventService.getMyParticipations();
@@ -83,10 +82,10 @@ export default function MyEventsScreen() {
               price={item.prix.toString()}
               image={item.image || ''}
               participants={Number(item.participants_count) || 0}
-              onPress={() => router.push({
-                  pathname: "/event-details",
-                  params: { id: item.id }
-              })}
+onPress={() => router.push({
+    pathname: "/event-details/[id]", 
+    params: { id: item.id }
+})}
             />
           )}
           ListEmptyComponent={

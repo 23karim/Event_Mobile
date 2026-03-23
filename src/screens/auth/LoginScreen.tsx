@@ -32,6 +32,7 @@ const LoginScreen = () => {
   const router = useRouter();
   const { signIn } = useAuth(); 
   const [loading, setLoading] = useState(false);
+  
   const handleLoginLocal = async (values: any) => {
     setLoading(true);
     try {
@@ -52,7 +53,7 @@ const LoginScreen = () => {
         <Text style={styles.titleText}>Login</Text>
 
         <Formik
-          initialValues={{ email: "karim.kekli@gmail.com", password: "123456789" }}
+          initialValues={{ email: "", password: "" }} 
           validationSchema={LoginSchema}
           onSubmit={handleLoginLocal}
         >

@@ -1,44 +1,79 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, StatusBar } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, StatusBar, ActivityIndicator, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { Colors } from '../../constants/Colors';
+import { eventService } from '../../services/eventService'; 
+import { Event } from '../../models/event'; 
 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  
 
-  // Données de l'événement (Idéalement à fetch via l'ID plus tard)
-  const event = {
-    title: 'Festival de Musique',
-    startDate: '25/10',
-    endDate: '27/10',
-    location: 'Théâtre de Carthage',
-    participants: 120,
-    price: '50',
-    description: 'Vivez une expérience unique au cœur du Théâtre de Carthage. Un festival regroupant les plus grands artistes pour trois nuits de magie et de musique sous les étoiles.',
-    image: 'https://picsum.photos/800/600'
+  const [event, setEvent] = useState<Event | null>(null);
+  const [loading, setLoading] = useState(true);
+
+
+  useEffect(() => {
+    const fetchEventDetails = async () => {
+      try {
+        setLoading(true);
+        if (id) {
+          const data = await eventService.getEventById(Number(id));
+          setEvent(data);
+        }
+      } catch (error: any) {
+        Alert.alert("Erreur", error);
+        router.back();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEventDetails();
+  }, [id]);
+
+
+  const handleJoin = async () => {
+    try {
+      if (event) {
+        await eventService.joinEvent(event.id);
+        Alert.alert("Succès", "Demande de participation envoyée !");
+      }
+    } catch (error: any) {
+      Alert.alert("Erreur", error);
+    }
   };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={Colors.blue} />
+      </View>
+    );
+  }
+
+  if (!event) return null;
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
       
-      {/* --- PARTIE FIXE (Image + Retour + Prix) --- */}
       <View style={styles.fixedHeader}>
-        <Image source={{ uri: event.image }} style={styles.image} />
+        <Image 
+          source={{ uri: event.image || 'https://via.placeholder.com/800x600?text=Pas+d+image' }} 
+          style={styles.image} 
+        />
         
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="white" />
-        </TouchableOpacity>
+
 
         <View style={styles.priceBadge}>
-          <Text style={styles.priceBadgeText}>{event.price} DT</Text>
+          <Text style={styles.priceBadgeText}>{event.prix} DT</Text>
         </View>
       </View>
 
-      {/* --- PARTIE SCROLLABLE (Contenu) --- */}
       <ScrollView 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
@@ -46,32 +81,29 @@ export default function EventDetailScreen() {
         <View style={styles.spacer} />
 
         <View style={styles.contentCard}>
-          <Text style={styles.title}>{event.title}</Text>
-{/* --- INFOS CLÉS --- */}
-          
-          {/* Date */}
+          <Text style={styles.title}>{event.titre}</Text>
+
+  
           <View style={styles.infoRow}>
             <View style={styles.iconCircle}>
               <Ionicons name="calendar" size={20} color={Colors.blue} />
             </View>
             <View>
-              <Text style={styles.infoLabel}>Du {event.startDate}</Text>
-              <Text style={styles.infoSub}>Au {event.endDate}</Text>
+              <Text style={styles.infoLabel}>Du {event.date_debut}</Text>
+              <Text style={styles.infoSub}>Au {event.date_fin}</Text>
             </View>
           </View>
 
-          {/* Lieu */}
           <View style={styles.infoRow}>
             <View style={styles.iconCircle}>
               <Ionicons name="location" size={20} color={Colors.blue} />
             </View>
             <View>
-              <Text style={styles.infoLabel}>{event.location}</Text>
+              <Text style={styles.infoLabel}>{event.lieu}</Text>
               <Text style={styles.infoSub}>Tunis, Tunisie</Text>
             </View>
           </View>
 
-          {/* Prix (Ligne séparée) */}
           <View style={styles.infoRow}>
             <View style={styles.iconCircle}>
               <Ionicons name="pricetag" size={20} color={Colors.blue} />
@@ -79,20 +111,17 @@ export default function EventDetailScreen() {
             <View>
               <Text style={styles.infoLabel}>Tarif de participation</Text>
               <Text style={[styles.infoSub, { fontWeight: 'bold', color: Colors.blue }]}>
-                {event.price} DT par personne
+                {event.prix} DT par personne
               </Text>
             </View>
           </View>
 
           <View style={styles.separator} />
-
-          {/* Bouton Participer */}
-          <TouchableOpacity style={styles.mainActionButton} onPress={() => alert('Demande de participation envoyée !')}>
+          <TouchableOpacity style={styles.mainActionButton} onPress={handleJoin}>
             <Ionicons name="people" size={20} color="white" />
             <Text style={styles.mainActionButtonText}>Participer</Text>
           </TouchableOpacity>
 
-          {/* Description */}
           <Text style={styles.sectionTitle}>À propos de l'événement</Text>
           <Text style={styles.description}>{event.description}</Text>
           
@@ -106,7 +135,6 @@ export default function EventDetailScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.white},
   
-  // Header Fixe
   fixedHeader: {
     position: 'absolute',
     top: 0,
@@ -135,7 +163,6 @@ const styles = StyleSheet.create({
   },
   priceBadgeText: { color: 'white', fontWeight: 'bold', fontSize: wp(4) },
 
-  // ScrollView
   scrollContent: { flexGrow: 1 },
   spacer: { height: hp(40) }, 
   
@@ -159,14 +186,15 @@ const styles = StyleSheet.create({
     width: 45,
     height: 45,
     borderRadius: 12,
-    backgroundColor:  Colors.white,
+    backgroundColor: Colors.white,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 15,
+    borderWidth: 1,
+    borderColor: '#F0F0F0'
   },
   infoLabel: { fontSize: wp(4.2), fontWeight: '600', color: Colors.black, },
   infoSub: { fontSize: wp(3.5),color: Colors.gray, marginTop: 2 },
-  inlinePrice: { fontSize: wp(4.5), fontWeight: 'bold', color: Colors.blue },
   
   separator: { height: 1, backgroundColor: '#F0F0F0', marginVertical: hp(2) },
 

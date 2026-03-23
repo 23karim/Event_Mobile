@@ -94,10 +94,11 @@ export default function EventsListScreen() {
               image={item.image || ''}
               participants={Number(item.participants_count) || 0} 
               onParticipate={() => handleParticipate(item.id)}
-              onPress={() => router.push({
-                  pathname: "/event-details",
-                  params: { id: item.id }
-              })}
+onPress={() => router.push({
+
+    pathname: "/event-details/[id]", 
+    params: { id: item.id }
+})}
             />
           )}
           ListEmptyComponent={

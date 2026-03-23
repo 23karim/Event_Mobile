@@ -30,7 +30,9 @@ const SignupSchema = Yup.object().shape({
   confirmPassword: Yup.string()
     .oneOf([Yup.ref('password')], "Les mots de passe ne correspondent pas")
     .required("Confirmation requise"),
-  tel: Yup.string().required("Téléphone requis"),
+  tel: Yup.string()
+    .matches(/^[0-9]{8}$/, "Le numéro doit contenir exactement 8 chiffres")
+    .required("Téléphone requis"),
 });
 
 export default function SignupScreen() {
@@ -113,13 +115,14 @@ export default function SignupScreen() {
 
                 <Input
                   label="Téléphone"
-                  placeholder="Ex: +216 22 123 456"
+                  placeholder="Ex: 23363948" 
                   keyboardType="phone-pad"
                   onChangeText={handleChange("tel")}
                   onBlur={handleBlur("tel")}
                   value={values.tel}
                   error={errors.tel}
                   touched={touched.tel}
+                  maxLength={8} 
                 />
 
                 <Input
