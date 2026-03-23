@@ -17,12 +17,13 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+import { useAuth } from "../../../context/AuthContext";
+import { Input } from "../../../components/Input";
 
-import { Button } from "../../components/buttons";
-import { Colors } from "../../constants/Colors";
-import { Input } from "../../components/Input";
-// Importation du contexte d'authentification
-import { useAuth } from "../../context/AuthContext";
+import { Colors } from "../../../constants/Colors";
+import { Button } from "../../../components/buttons";
+
+
 
 const LoginSchema = Yup.object().shape({
   email: Yup.string().email("Email invalide").required("Email requis"),

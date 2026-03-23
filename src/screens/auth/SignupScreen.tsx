@@ -20,7 +20,6 @@ import {
 import { Input } from "../../components/Input";
 import { Button } from "../../components/buttons";
 import { Colors } from "../../constants/Colors";
-// Import du service
 import { authService } from "../../services/authService";
 
 const SignupSchema = Yup.object().shape({
@@ -42,14 +41,13 @@ export default function SignupScreen() {
     setLoading(true);
     
     try {
-      // Préparation du FormData (requis car ton backend utilise Multer)
       const formData = new FormData();
       formData.append("nom", values.nom);
       formData.append("prenom", values.prenom);
       formData.append("email", values.email);
       formData.append("password", values.password);
       formData.append("tel", values.tel);
-      formData.append("role", "client"); // Envoi du rôle par défaut
+      formData.append("role", "client"); 
 
       const response = await authService.signup(formData);
       

@@ -21,7 +21,6 @@ import {
 import { Button } from "../../components/buttons";
 import { Colors } from "../../constants/Colors";
 import { Input } from "../../components/Input";
-// Importation du contexte d'authentification
 import { useAuth } from "../../context/AuthContext";
 
 const LoginSchema = Yup.object().shape({
@@ -31,17 +30,13 @@ const LoginSchema = Yup.object().shape({
 
 const LoginScreen = () => {
   const router = useRouter();
-  const { signIn } = useAuth(); // On récupère la méthode signIn du contexte
+  const { signIn } = useAuth(); 
   const [loading, setLoading] = useState(false);
-
-  // Fonction de soumission qui consomme l'API via le contexte
   const handleLoginLocal = async (values: any) => {
     setLoading(true);
     try {
       await signIn(values.email, values.password);
-      // La redirection vers /(tabs) est gérée automatiquement par le useEffect dans AuthContext
     } catch (error: any) {
-      // Affichage de l'erreur venant du backend (ex: "Email ou mot de passe incorrect")
       Alert.alert("Erreur", error || "Une erreur est survenue");
     } finally {
       setLoading(false);

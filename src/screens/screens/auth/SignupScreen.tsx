@@ -17,11 +17,11 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
-import { Input } from "../../components/Input";
-import { Button } from "../../components/buttons";
-import { Colors } from "../../constants/Colors";
-// Import du service
-import { authService } from "../../services/authService";
+import { authService } from "../../../services/authService";
+import { Input } from "../../../components/Input";
+import { Button } from "../../../components/buttons";
+import { Colors } from "../../../constants/Colors";
+
 
 const SignupSchema = Yup.object().shape({
   nom: Yup.string().required("Nom requis"),

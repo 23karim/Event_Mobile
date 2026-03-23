@@ -5,8 +5,9 @@ import { useRouter } from 'expo-router';
 import { Colors } from '../../src/constants/Colors';
 import { EventCard } from '../../src/components/EventCard';
 import { SearchBar } from '../../src/components/SearchBar';
-import { eventService } from '../../src/services/eventService';
+
 import { Event } from '../../src/models/event';
+import { eventService } from '../../src/services/eventService';
 
 export default function EventsListScreen() {
   const [search, setSearch] = useState('');
