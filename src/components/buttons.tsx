@@ -45,8 +45,6 @@ const PasserButton: React.FC<ButtonSkipProps> = ({ count, onPress }) => {
   }
   return <View style={{ width: wp(15) }} />;
 };
-
-// Bouton Ajouter (Style similaire)
 const AddButton: React.FC<ButtonProps> = ({ onPress, buttonText }) => {
   return (
     <TouchableOpacity
@@ -70,7 +68,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     marginHorizontal: hp(5),
     justifyContent: "center",
-    borderRadius: 25, // Un peu plus arrondi pour un look moderne
+    borderRadius: 25, 
     elevation: 3,   
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -82,7 +80,7 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontSize: wp(4.5),
     textAlign: "center",
-    fontWeight: "bold", // En attendant le chargement des polices personnalisées
+    fontWeight: "bold",
   },
   addBtnWrapper: {
     marginTop: hp(2),

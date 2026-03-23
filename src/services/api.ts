@@ -1,7 +1,7 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
-const API_URL = "http://172.20.28.189:5000"; // 10.0.2.2 pour Android, localhost pour iOS
+const API_URL = "http://172.20.28.189:5000";
 
 const api = axios.create({
   baseURL: API_URL,
@@ -10,7 +10,6 @@ const api = axios.create({
   },
 });
 
-// Intercepteur pour injecter le Token automatiquement dans chaque requête
 api.interceptors.request.use(
   async (config) => {
     const token = await SecureStore.getItemAsync('accessToken');

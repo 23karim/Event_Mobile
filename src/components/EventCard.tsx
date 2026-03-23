@@ -6,7 +6,7 @@ import { Colors } from '../constants/Colors';
 
 interface EventCardProps {
   title: string;
-  description: string; // Ajouté
+  description: string; 
   startDate: string;
   endDate: string;
   participants: number;
@@ -38,22 +38,16 @@ export const EventCard: React.FC<EventCardProps> = ({
       </View>
       
       <View style={styles.infoContainer}>
-        {/* Titre */}
         <Text style={styles.title} numberOfLines={1}>{title}</Text>
-        
-        {/* Dates */}
+
         <View style={styles.row}>
           <Ionicons name="time-outline" size={16} color={Colors.blue} />
           <Text style={styles.detailsText}>Du {startDate} au {endDate}</Text>
         </View>
-
-        {/* Lieu */}
         <View style={styles.row}>
           <Ionicons name="location-outline" size={16} color={Colors.blue} />
           <Text style={styles.detailsText} numberOfLines={1}>{location}</Text>
         </View>
-
-        {/* Description (Nouvelle Section) */}
         <Text style={styles.descriptionText} numberOfLines={2}>
           {description}
         </Text>
@@ -102,8 +96,6 @@ const styles = StyleSheet.create({
   title: { fontSize: wp(4.5), fontWeight: 'bold', color: Colors.black, marginBottom: hp(0.5) },
   row: { flexDirection: 'row', alignItems: 'center', marginBottom: hp(0.5) },
   detailsText: { marginLeft: 8, color: Colors.gray, fontSize: wp(3.5) },
-  
-  // Style de la description
   descriptionText: { 
     fontSize: wp(3.3), 
     color: '#666', 

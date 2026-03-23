@@ -25,7 +25,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         style={styles.searchInput}
         placeholder={placeholder}
         value={value}
-        // React Native s'occupe d'extraire le texte pour nous ici
         onChangeText={onChangeText} 
         placeholderTextColor={Colors.gray}
       />
@@ -46,7 +45,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F2F2F2', 
     borderRadius: 12, 
     paddingHorizontal: 15, 
-    height: 55, // Hauteur fixe pour une meilleure consistance
+    height: 55, 
     marginTop: hp(1) 
   },
   searchInput: { 
