@@ -49,5 +49,14 @@ export const eventService = {
     } catch (error: any) {
       throw error.response?.data?.message || "Erreur lors de la récupération des participants";
     }
-  }
+  },
+  leaveEvent: async (eventId: number): Promise<{ message: string }> => {
+    try {
+      const { data } = await api.delete<{ message: string }>(`/events/${eventId}/leave`);
+      return data;
+    } catch (error: any) {
+      console.error("Erreur LeaveEvent:", error.response?.data || error.message);
+      throw error.response?.data?.message || "Erreur lors de la désinscription";
+    }
+  },
 };

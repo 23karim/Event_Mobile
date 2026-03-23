@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react'; 
-import { View, FlatList, StyleSheet, Text, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, FlatList, StyleSheet, Text, ActivityIndicator, RefreshControl, Alert } from 'react-native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { useRouter, useFocusEffect } from 'expo-router'; 
 import { EventCard } from '../../components/EventCard';
@@ -32,6 +32,42 @@ export default function MyEventsScreen() {
       loadMyEvents();
     }, [])
   );
+
+  const isEventPast = (startDate: string) => {
+    const now = new Date();
+    const eventDate = new Date(startDate);
+    return eventDate < now;
+  };
+
+  const handleLeavePress = (event: Event) => {
+    if (isEventPast(event.date_debut)) {
+      Alert.alert("Action impossible", "Vous ne pouvez plus vous désister d'un événement qui a déjà commencé.");
+      return;
+    }
+
+    Alert.alert(
+      "Annulation",
+      `Voulez-vous vraiment annuler votre participation à "${event.titre}" ?`,
+      [
+        { text: "Annuler", style: "cancel" },
+        { 
+          text: "Oui, me désister", 
+          style: "destructive", 
+          onPress: () => performLeave(event.id) 
+        }
+      ]
+    );
+  };
+
+  const performLeave = async (eventId: number) => {
+    try {
+      const response = await eventService.leaveEvent(eventId);
+      Alert.alert("Succès", response.message);
+      loadMyEvents(); 
+    } catch (error: any) {
+      Alert.alert("Erreur", error);
+    }
+  };
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -82,10 +118,11 @@ export default function MyEventsScreen() {
               price={item.prix.toString()}
               image={item.image || ''}
               participants={Number(item.participants_count) || 0}
-onPress={() => router.push({
-    pathname: "/event-details/[id]", 
-    params: { id: item.id }
-})}
+              onParticipate={() => handleLeavePress(item)}
+              onPress={() => router.push({
+                pathname: "/event-details/[id]", 
+                params: { id: item.id }
+              })}
             />
           )}
           ListEmptyComponent={

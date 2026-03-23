@@ -11,37 +11,75 @@ export default function EventDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   
-
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchEventDetails = async () => {
+    try {
+      setLoading(true);
+      if (id) {
+        const data = await eventService.getEventById(Number(id));
+        setEvent(data);
+      }
+    } catch (error: any) {
+      Alert.alert("Erreur", error);
+      router.back();
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchEventDetails = async () => {
-      try {
-        setLoading(true);
-        if (id) {
-          const data = await eventService.getEventById(Number(id));
-          setEvent(data);
-        }
-      } catch (error: any) {
-        Alert.alert("Erreur", error);
-        router.back();
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchEventDetails();
   }, [id]);
-
+  
+  const isEventPast = (startDate: string) => {
+    const now = new Date();
+    const eventDate = new Date(startDate);
+    return eventDate < now;
+  };
 
   const handleJoin = async () => {
+    if (!event) return;
+    if (isEventPast(event.date_debut)) {
+      Alert.alert("Action impossible", "Cet événement a déjà débuté.");
+      return;
+    }
+
     try {
-      if (event) {
-        await eventService.joinEvent(event.id);
-        Alert.alert("Succès", "Demande de participation envoyée !");
+      await eventService.joinEvent(event.id);
+      Alert.alert("Succès", "Participation confirmée !");
+      fetchEventDetails(); 
+    } catch (error: any) {
+      if (error.includes("déjà")) {
+        confirmLeave();
+      } else {
+        Alert.alert("Erreur", error);
       }
+    }
+  };
+
+  const confirmLeave = () => {
+    Alert.alert(
+      "Déjà inscrit",
+      "Voulez-vous annuler votre participation à cet événement ?",
+      [
+        { text: "Annuler", style: "cancel" },
+        { 
+          text: "Oui, me désister", 
+          style: "destructive", 
+          onPress: handleLeave 
+        }
+      ]
+    );
+  };
+
+  const handleLeave = async () => {
+    if (!event) return;
+    try {
+      const response = await eventService.leaveEvent(event.id);
+      Alert.alert("Succès", response.message);
+      fetchEventDetails(); 
     } catch (error: any) {
       Alert.alert("Erreur", error);
     }
@@ -68,7 +106,6 @@ export default function EventDetailScreen() {
         />
         
 
-
         <View style={styles.priceBadge}>
           <Text style={styles.priceBadgeText}>{event.prix} DT</Text>
         </View>
@@ -83,7 +120,6 @@ export default function EventDetailScreen() {
         <View style={styles.contentCard}>
           <Text style={styles.title}>{event.titre}</Text>
 
-  
           <View style={styles.infoRow}>
             <View style={styles.iconCircle}>
               <Ionicons name="calendar" size={20} color={Colors.blue} />
@@ -117,9 +153,18 @@ export default function EventDetailScreen() {
           </View>
 
           <View style={styles.separator} />
-          <TouchableOpacity style={styles.mainActionButton} onPress={handleJoin}>
+          
+          <TouchableOpacity 
+            style={[
+              styles.mainActionButton, 
+              isEventPast(event.date_debut) && { backgroundColor: Colors.gray } // Grisé si passé
+            ]} 
+            onPress={handleJoin}
+          >
             <Ionicons name="people" size={20} color="white" />
-            <Text style={styles.mainActionButtonText}>Participer</Text>
+            <Text style={styles.mainActionButtonText}>
+              {isEventPast(event.date_debut) ? "Événement terminé" : "Participer"}
+            </Text>
           </TouchableOpacity>
 
           <Text style={styles.sectionTitle}>À propos de l'événement</Text>

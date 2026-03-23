@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, FlatList, StyleSheet, Text, ActivityIndicator, RefreshControl, Alert, TouchableOpacity } from 'react-native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router'; 
 import { Ionicons } from '@expo/vector-icons'; 
 import { Colors } from '../../src/constants/Colors';
 import { EventCard } from '../../src/components/EventCard';
@@ -31,10 +31,11 @@ export default function EventsListScreen() {
       setRefreshing(false);
     }
   };
-
-  useEffect(() => {
-    loadEvents();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadEvents();
+    }, [])
+  );
 
   const handleLogout = () => {
     Alert.alert(
@@ -47,13 +48,49 @@ export default function EventsListScreen() {
     );
   };
 
-  const handleParticipate = async (eventId: number) => {
+  const isEventPast = (startDate: string) => {
+    const now = new Date();
+    const eventDate = new Date(startDate);
+    return eventDate < now;
+  };
+
+  const handleParticipate = async (event: Event) => {
+    if (isEventPast(event.date_debut)) {
+      Alert.alert("Action impossible", "Cet événement a déjà commencé ou est terminé.");
+      return;
+    }
+
     try {
-      const response = await eventService.joinEvent(eventId);
+      const response = await eventService.joinEvent(event.id);
       Alert.alert("Félicitations", response.message);
       loadEvents(); 
     } catch (error: any) {
-      Alert.alert("Information", error);
+      if (error.includes("déjà")) {
+        confirmLeave(event.id);
+      } else {
+        Alert.alert("Information", error);
+      }
+    }
+  };
+
+  const confirmLeave = (eventId: number) => {
+    Alert.alert(
+      "Déjà inscrit",
+      "Vous participez déjà à cet événement. Voulez-vous annuler votre participation ?",
+      [
+        { text: "Non", style: "cancel" },
+        { text: "Oui, annuler", style: "destructive", onPress: () => handleLeave(eventId) }
+      ]
+    );
+  };
+
+  const handleLeave = async (eventId: number) => {
+    try {
+      const response = await eventService.leaveEvent(eventId);
+      Alert.alert("Annulé", response.message);
+      loadEvents(); 
+    } catch (error: any) {
+      Alert.alert("Erreur", error);
     }
   };
 
@@ -113,7 +150,7 @@ export default function EventsListScreen() {
               price={item.prix.toString()}
               image={item.image || ''}
               participants={Number(item.participants_count) || 0} 
-              onParticipate={() => handleParticipate(item.id)}
+              onParticipate={() => handleParticipate(item)}
               onPress={() => router.push({
                   pathname: "/event-details/[id]", 
                   params: { id: item.id }
