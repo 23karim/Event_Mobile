@@ -23,19 +23,13 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="my-events" 
+        name="my-events"
         options={{
           title: 'Mes participations',
           tabBarIcon: ({ color }) => <Ionicons name="ticket" size={24} color={color} />,
         }}
       />
-      <Tabs.Screen
-        name="profile" 
-        options={{
-          title: 'Profil',
-          tabBarIcon: ({ color }) => <Ionicons name="person" size={24} color={color} />,
-        }}
-      />
+      
     </Tabs>
   );
 }

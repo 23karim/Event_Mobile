@@ -1,57 +1,49 @@
-import React, { useState, useEffect } from 'react';
-import { View, FlatList, StyleSheet, Text, ActivityIndicator, RefreshControl, Alert } from 'react-native';
+import React, { useState, useCallback } from 'react'; 
+import { View, FlatList, StyleSheet, Text, ActivityIndicator, RefreshControl } from 'react-native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import { useRouter } from 'expo-router';
-import { Colors } from '../../src/constants/Colors';
-import { EventCard } from '../../src/components/EventCard';
-import { SearchBar } from '../../src/components/SearchBar';
+import { useRouter, useFocusEffect } from 'expo-router'; 
+import { EventCard } from '../../components/EventCard';
+import { Colors } from '../../constants/Colors';
+import { SearchBar } from '../../components/SearchBar';
+import { eventService } from '../../services/eventService';
+import { Event } from '../../models/event';
 
-import { Event } from '../../src/models/event';
-import { eventService } from '../../src/services/eventService';
-
-export default function EventsListScreen() {
+export default function MyEventsScreen() {
   const [search, setSearch] = useState('');
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
 
-  const loadEvents = async () => {
+  // 1. Fonction de chargement
+  const loadMyEvents = async () => {
     try {
-      const response = await eventService.getAllEvents(1, 50);
+      const response = await eventService.getMyParticipations();
       setEvents(response.events);
     } catch (error) {
-      console.error("Erreur chargement events:", error);
+      console.error("Erreur lors de la récupération de mes events:", error);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   };
 
-  useEffect(() => {
-    loadEvents();
-  }, []);
-
-  const handleParticipate = async (eventId: number) => {
-    try {
-      const response = await eventService.joinEvent(eventId);
-      Alert.alert("Félicitations", response.message);
-
-      loadEvents(); 
-    } catch (error: any) {
-      Alert.alert("Information", error);
-    }
-  };
+  useFocusEffect(
+    useCallback(() => {
+      loadMyEvents();
+    }, [])
+  );
 
   const onRefresh = () => {
     setRefreshing(true);
-    loadEvents();
+    loadMyEvents();
   };
+
   const filteredEvents = events.filter(event => {
-    const term = search.toLowerCase().trim();
+    const searchTerm = search.toLowerCase();
     return (
-      event.titre.toLowerCase().includes(term) || 
-      event.lieu.toLowerCase().includes(term)
+      event.titre.toLowerCase().includes(searchTerm) || 
+      event.lieu.toLowerCase().includes(searchTerm)
     );
   });
 
@@ -63,12 +55,10 @@ export default function EventsListScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Trouvez des événements</Text>
-        
+        <Text style={styles.headerTitle}>Mes Participations</Text>
         <SearchBar
           value={search} 
           onChangeText={setSearch} 
-          placeholder="Chercher par lieu ou titre..." 
           onFilterPress={() => console.log("Open Filter Modal")}
         />
       </View>
@@ -86,14 +76,13 @@ export default function EventsListScreen() {
           renderItem={({ item }) => (
             <EventCard 
               title={item.titre}
-              description={item.description || "Aucune description disponible"} // <--- AJOUTÉ ICI
+              description={item.description}
               startDate={formatDate(item.date_debut)}
               endDate={formatDate(item.date_fin)}
               location={item.lieu}
               price={item.prix.toString()}
               image={item.image || ''}
-              participants={Number(item.participants_count) || 0} 
-              onParticipate={() => handleParticipate(item.id)}
+              participants={Number(item.participants_count) || 0}
               onPress={() => router.push({
                   pathname: "/event-details",
                   params: { id: item.id }
@@ -102,7 +91,9 @@ export default function EventsListScreen() {
           )}
           ListEmptyComponent={
             <Text style={styles.empty}>
-              {search ? "Aucun résultat pour cette recherche." : "Aucun événement disponible."}
+              {search 
+                ? "Aucun titre ou lieu ne correspond." 
+                : "Vous n'avez pas encore de participations."}
             </Text>
           }
         />
@@ -114,7 +105,14 @@ export default function EventsListScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F8F9FA' },
   header: { paddingHorizontal: wp(5), paddingTop: hp(6), paddingBottom: hp(2), backgroundColor: Colors.white },
-  headerTitle: { fontSize: wp(6), fontWeight: 'bold', color: Colors.black, marginVertical: hp(2) },
+  headerTitle: { 
+    fontSize: wp(6), 
+    fontWeight: 'bold', 
+    color: Colors.black, 
+    marginVertical: hp(2),
+    textDecorationLine : 'underline', 
+    textAlign : 'center'
+  },
   listContent: { padding: wp(5) },
-  empty: { textAlign: 'center', marginTop: 50, color: Colors.gray, paddingHorizontal: 20 }
+  empty: { textAlign: 'center', marginTop: 50, color: Colors.gray }
 });

@@ -1,9 +1,7 @@
-import { EventsResponse } from '../models/event';
+import { EventsResponse, Event } from '../models/event';
 import api from './api';
 
-
 export const eventService = {
-
   getAllEvents: async (page: number = 1, limit: number = 10): Promise<EventsResponse> => {
     try {
       const { data } = await api.get<EventsResponse>(`/events/all`, {
@@ -25,12 +23,31 @@ export const eventService = {
     }
   },
 
-joinEvent: async (eventId: number): Promise<{ message: string }> => {
+  joinEvent: async (eventId: number): Promise<{ message: string }> => {
     try {
       const { data } = await api.post(`/events/${eventId}/join`);
       return data;
     } catch (error: any) {
       throw error.response?.data?.message || "Erreur lors de la participation";
+    }
+  },
+
+  getMyParticipations: async (): Promise<{ count: number, events: Event[] }> => {
+    try {
+      const { data } = await api.get(`/events/my-participations`);
+      return data;
+    } catch (error: any) {
+      throw error.response?.data?.message || "Erreur lors de la récupération de vos événements";
+    }
+  },
+  getEventParticipants: async (eventId: number, page: number = 1): Promise<any> => {
+    try {
+      const { data } = await api.get(`/events/${eventId}/participants`, {
+        params: { page }
+      });
+      return data;
+    } catch (error: any) {
+      throw error.response?.data?.message || "Erreur lors de la récupération des participants";
     }
   }
 };
